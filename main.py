@@ -22,6 +22,9 @@ planet2=pygame.image.load('images/planet2.png')
 planet2=pygame.transform.scale(planet2,(200,200))
 menuImg=pygame.image.load('images/textmenu.png')
 
+limit=50
+speed=100
+
 def move_right(list):
     if list[0]>=360:
        pass
@@ -87,6 +90,14 @@ o=(255,140,0)
 
 pygame.init()
 
+#music=pygame.mixer.music.load('sounds/smain.wav')
+gameover=pygame.mixer.Sound('sounds/gameover.wav')
+shoot=pygame.mixer.Sound('sounds/shoot.wav')
+explotion=pygame.mixer.Sound('sounds/explotion.wav')
+music=pygame.mixer.music.load('sounds/menu.mp3')
+pygame.mixer.music.set_volume(0.25)
+pygame.mixer.music.play(-1)
+
 screen = pygame.display.set_mode(size)
 
 pygame.display.set_caption("Asteroid 2020")
@@ -114,23 +125,23 @@ clock=pygame.time.Clock()
 
 while not done:
  while not menu and not done:
+  pygame.mixer.music.unpause()
+  key=pygame.key.get_pressed() 
+  clock.tick(100)
   
   font3=pygame.font.SysFont('Courier',18)
   text3=font3.render('press <<SPACE>> to start',True, r)
   textRect3=text3.get_rect()
   textRect3.center=(200,220)
-
-  
+ 
   for event in pygame.event.get():
    if event.type == pygame.QUIT: 
      done=True
   
-  key=pygame.key.get_pressed() 
-  clock.tick(100)
-  
   if key[pygame.K_SPACE]: 
+     pygame.mixer.music.rewind
      menu=True
-  
+
   text3=font3.render('press <<SPACE>> to start',True, r)
   
   screen.fill(bl)
@@ -140,8 +151,14 @@ while not done:
   screen.blit(planet1,(10,-20))
   screen.blit(planet2,(230,250))
   pygame.display.flip()
+ 
+ 
  while not done2 and not done:
  
+
+  pygame.mixer.music.unpause()
+  pygame.mixer.music.set_volume(0.4)
+  
   for event in pygame.event.get():
     if event.type == pygame.QUIT: 
      done=True
@@ -151,12 +168,15 @@ while not done:
      backy=-400
   key=pygame.key.get_pressed() 
  
-  k=random.randint(1,50)
+  k=random.randint(1,limit)
  
-  if i==100:
+  if i==speed:
       i=0
       points+=1
-  clock.tick(100)
+      if points%10==0:
+         limit-=1
+         speed+=10
+  clock.tick(speed)
 
 
 
@@ -169,7 +189,8 @@ while not done:
      if i>10:
          bulletlist.append(bullet(position))
          i=0
- 
+         shoot.set_volume(0.3)
+         shoot.play()
   if k==10:
      cometlist.append(comet())
  
@@ -198,6 +219,9 @@ while not done:
         #print('Im here')
          for val in range(n.x,n.x+n.sizex):
              if val in range(position[0],position[0]+40):
+                pygame.mixer.music.pause()
+                gameover.set_volume(0.5)
+                gameover.play()
                 done3=False
                 done2=True
                #+m.sizey-30 może być po m.y
@@ -206,11 +230,11 @@ while not done:
          if n.y in range(m.y,m.y+m.sizey):
              for val in range(n.x-10,n.x+20):      #dodałem 10 i odjąłem 10 z lewej
                  if val in range(m.x,m.x+m.sizex):
+                    #explotion.set_volume(0.1)
+                    #explotion.play() 
                     m.num=0
                     n.num=0
-                   #fire+=1
-                   #print(fire)
-                
+                  
  
   i+=1
   bulletlist.clear()
@@ -223,7 +247,7 @@ while not done:
   pygame.display.flip()
 
  while not done3 and not done:
-  
+  pygame.mixer.music.pause()
   for event in pygame.event.get():
    if event.type == pygame.QUIT: 
      done=True
@@ -237,10 +261,13 @@ while not done:
 
   
   if key[pygame.K_r]:
+     pygame.mixer.music.rewind
      points=0
      cometlist.clear()
      bulletlist.clear()
      position[0]=180
+     limit=50
+     speed=100
      font=pygame.font.SysFont('Courier', 12)
      textRect.center=(30,10)
      done2=False
